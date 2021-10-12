@@ -68,6 +68,8 @@ int main() {
         
         if (event == "telemetry") {
           // j[1] is the data JSON object
+          //
+          // The data JSON object is the data provided from the Simulator to the C++ Program
           
           // Main car's localization Data
           double car_x = j[1]["x"];
@@ -78,10 +80,17 @@ int main() {
           double car_speed = j[1]["speed"];
 
           // Previous path data given to the Planner
+          //
+          // The previous list of x points previously given to the simulator
           auto previous_path_x = j[1]["previous_path_x"];
+          // The previous list of y points previously given to the simulator
           auto previous_path_y = j[1]["previous_path_y"];
+
           // Previous path's end s and d values 
+          //
+          // The previous list's last point's frenet s value
           double end_path_s = j[1]["end_path_s"];
+          // The previous list's last point's frenet d value
           double end_path_d = j[1]["end_path_d"];
 
           // Sensor Fusion Data, a list of all other cars on the same side 
