@@ -107,13 +107,32 @@ int main() {
            *   sequentially every .02 seconds
            */
 
-          // "dist_inc" tells us how much the points are going to be spaced apart (in meters).
+          // "dist_inc" (distance increment) tells us how much the points are going to be spaced apart (in meters).
           // Since the car moves 50 times a second, a distance of 0.5m per move will create a 
           // velocity of 25 m/s. 25 m/s is close to 50 MPH (see "Getting Started" section of the project).
           double dist_inc = 0.5;
+          // Loop over 50 values as the car moves 50 times per second. 
           for (int i = 0; i < 50; ++i) {
-            next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
-            next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+            /*
+             * On every loop cycle a new s and d values are computed. The new s value is computed from the old 
+             * s value , by adding to it the distance increment times the step number. The step number starts at
+             * i+1 to avoid that at time t=0 the car won't move (the s value would be the same). 
+             * The car s value is received from the simulator (see the "telemetry" event above).
+             *
+             * The d value stays constant and puts the car always in the center of the middle lane. 
+             * That's because the highway has 6 lanes total (3 heading in each direction) and each lane is 4 m wide. The 
+             * d vector has a magnitude of 1 and points perpendicular to the road in the direction of the right-hand side 
+             * of the road. So the road is large 4 * 3 meters (4 meters per lane) and the middle of the road is at d = 6 meters.
+             */
+            double next_s = car_s + (i + 1) * dist_inc;
+            double next_d = 6;
+
+            // The simulator computes the car position using the x and y values given as output from the path planner. 
+            // So we have to convert the s and d values to x and y coordinates. 
+            vector<double> xy = getXY(next_s, next_d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+
+            next_x_vals.push_back(xy[0]);
+            next_y_vals.push_back(xy[1]);
           }
 
           msgJson["next_x"] = next_x_vals;
