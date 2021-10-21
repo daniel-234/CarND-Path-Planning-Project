@@ -111,6 +111,46 @@ int main() {
           // from the car's angle if it has just started to move. 
           int previous_size = previous_path_x.size();
 
+
+          // The sensor fusion data from the simulator is reporting the data from all the other cars
+          // in the road, that have valus for s, d, x, y, vx and vy values. 
+          // We can use those values to track the other cars on the same side of the road and decide how our 
+          // car should behave. 
+
+          // If we have the value of the previous s position of the car, use that as the car value to 
+          // compare it to other cars s value. 
+          if (previous_size > 0) {
+            car_s = end_path_s;
+          }
+
+          bool is_too_close = false;
+
+          for (int i = 0; i < sensor_fusion.size(); i++) {
+            // Check if the car is in our lane.
+            // The d value is the 7th value of a car's data measurements returned by the simulator. 
+            float d = sensor_fusion[i][6]; 
+            // Check if any can is in the same lane of our car plus a range of +/- 2 meters, in case
+            // we're moving to another lane. 
+            if (d < (2 + 4 * lane + 2) && d > (2 + 4 * lane - 2)) {
+              double other_car_vx = sensor_fusion[i][3];
+              double other_car_vy = sensor_fusion[i][4];
+              double other_car_speed = sqrt(other_car_vx * other_car_vx + other_car_vy * other_car_vy);
+              double other_car_s_position = sensor_fusion[i][5];
+
+              // Project this car that's on the same lane in the future, based on previous s points and 
+              // its actual velocity. This way we could avoid hitting it. 
+              other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
+              // Check if the other car is in front of us and the gap between the two is less than 30 meters.
+              if ((other_car_s_position > car_s) && (other_car_s_position - car_s) < 30) {
+                // Lower our car's reference velocity to 29.5 MPH.
+                //ref_velocity = 29.5;
+                ref_velocity = other_car_speed;
+              }
+            }
+          }
+
+
+
           // Create a list of widely spaced waypoints, evenly spaced at 30 meters, that will be interpolated
           // with a spline to create a smooth path for the car.
           vector<double> list_of_anchor_x_points;
