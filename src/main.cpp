@@ -53,8 +53,8 @@ int main() {
 
   // Define a lane variable to be able to switch quickly from a lane to another
   int lane = 1;
-  // Velocity to target in MPH
-  double ref_velocity = 49.5;
+  // Velocity of our car at the beginning. It will get incremented at lines 156 - 157.
+  double ref_velocity = 0;
 
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
                &map_waypoints_dx,&map_waypoints_dy, &ref_velocity, &lane]
@@ -123,6 +123,7 @@ int main() {
             car_s = end_path_s;
           }
 
+          // Flag to signal that our car is getting too close to another one.
           bool is_too_close = false;
 
           for (int i = 0; i < sensor_fusion.size(); i++) {
@@ -142,14 +143,19 @@ int main() {
               other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
               // Check if the other car is in front of us and the gap between the two is less than 30 meters.
               if ((other_car_s_position > car_s) && (other_car_s_position - car_s) < 30) {
-                // Lower our car's reference velocity to 29.5 MPH.
-                //ref_velocity = 29.5;
-                ref_velocity = other_car_speed;
+                // Set the flag as to set the other car as too close.
+                is_too_close = true;
               }
             }
           }
 
-
+          // Check if our car is too close to another one and increment or decrement velocity accordingly.
+          if (is_too_close) {
+            // Decrease velocity by about 10 m/sec
+            ref_velocity -= 0.224;
+          } else if (ref_velocity < 49.5) {
+            ref_velocity += 0.224;
+          }
 
           // Create a list of widely spaced waypoints, evenly spaced at 30 meters, that will be interpolated
           // with a spline to create a smooth path for the car.
