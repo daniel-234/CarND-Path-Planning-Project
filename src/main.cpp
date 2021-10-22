@@ -126,30 +126,32 @@ int main() {
           // Flag to signal that our car is getting too close to another one.
           bool is_too_close = false;
 
+          // Sensor fusion is a 2D vector of cars and then that car's measurements.
+          // Loop through each car measurements.
           for (int i = 0; i < sensor_fusion.size(); i++) {
-            // Check if the car is in our lane.
             // The d value is the 7th value of a car's data measurements returned by the simulator. 
             float d = sensor_fusion[i][6]; 
-            // Check if any can is in the same lane of our car plus a range of +/- 2 meters, in case
-            // we're moving to another lane. 
+            // Check if any car is in the same lane of our car. This checks if this car's d value is less than 
+            // the value of the right lane and greater than the value of the left lane. 
             if (d < (2 + 4 * lane + 2) && d > (2 + 4 * lane - 2)) {
+              // Save this car's measurements.
               double other_car_vx = sensor_fusion[i][3];
               double other_car_vy = sensor_fusion[i][4];
               double other_car_speed = sqrt(other_car_vx * other_car_vx + other_car_vy * other_car_vy);
               double other_car_s_position = sensor_fusion[i][5];
 
-              // Project this car that's on the same lane in the future, based on previous s points and 
-              // its actual velocity. This way we could avoid hitting it. 
+              // Project this car position in the future, based on previous s points and its actual velocity. 
+              // This way we could avoid hitting it. 
               other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
               // Check if the other car is in front of us and the gap between the two is less than 30 meters.
               if ((other_car_s_position > car_s) && (other_car_s_position - car_s) < 30) {
-                // Set the flag as to set the other car as too close.
+                // Set a flag for our car being to close to another one in the same lane.
                 is_too_close = true;
               }
             }
           }
 
-          // Check if our car is too close to another one and increment or decrement velocity accordingly.
+          // Check if our car is too close to another one in the same lane and adjust velocity accordingly.
           if (is_too_close) {
             // Decrease velocity by about 10 m/sec
             ref_velocity -= 0.224;
