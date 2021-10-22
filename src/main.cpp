@@ -125,8 +125,9 @@ int main() {
 
           // Flag to signal that our car is getting too close to another one.
           bool is_too_close = false;
-          // Flag to signal that our car is getting too close to another one.
-          bool can_pass = true;
+          // Flags to signal that our car can move to another lane to pass another car.
+          bool move_to_left_lane = true;
+          bool move_to_right_lane = true;
 
           // Sensor fusion is a 2D vector of cars and then that car's measurements.
           // Loop through each car measurements.
@@ -135,7 +136,7 @@ int main() {
             float d = sensor_fusion[i][6]; 
             // Check if any car is in the same lane of our car. This checks if this car's d value is less than 
             // the value of the right lane and greater than the value of the left lane. 
-            if (d < (2 + 4 * lane + 2) && d > (2 + 4 * lane - 2)) {
+            if (d < (2 + 4 * lane + 2) && d > (4 * lane)) {
               // Save this car's measurements.
               double other_car_vx = sensor_fusion[i][3];
               double other_car_vy = sensor_fusion[i][4];
@@ -152,11 +153,8 @@ int main() {
               } 
             }
 
-            // Check that our car is not on the left lane and if any car is on it, in case we have to pass
-            // a slower car in the middle lane. 
-            if ((lane == 1) && (d < 4) && (d > 0)) {
-
-
+            // Check if our car can move to a right lane to pass a slower car. 
+            if ((lane != 2) && d > (4 + 4 * lane) && d < (4 + 4 * lane + 4)) {
               // Save this car's measurements.
               double other_car_vx = sensor_fusion[i][3];
               double other_car_vy = sensor_fusion[i][4];
@@ -166,18 +164,38 @@ int main() {
               // Project this car position in the future, based on previous s points and its actual velocity. 
               // This way we could avoid hitting it. 
               other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
-              // Check if the other car is behind us (on the left lane) and the gap between the two is less than 30 meters.
-              if ((other_car_s_position < car_s) && (car_s - other_car_s_position) < 15 && (other_car_speed > car_speed)) {
+              // Check if the other car is ahead of us but not too close or if it is behind us but the gap 
+              // is at least 15 meters and its velocity is not greater than ours.
+              if ((other_car_s_position - car_s) < 30 || ((car_s - other_car_s_position) < 40 && (other_car_speed <= car_speed))) {
                 // Set a flag for our car being to close to another one in the same lane.
-                can_pass = false;
+                move_to_right_lane = false;
               } 
+            // Check if our car can move to a left lane to pass a slower car. 
+            } else if ((lane != 0) && d < (4 * lane) && d > (4 * lane - 4)) {
+              // Save this car's measurements.
+              double other_car_vx = sensor_fusion[i][3];
+              double other_car_vy = sensor_fusion[i][4];
+              double other_car_speed = sqrt(other_car_vx * other_car_vx + other_car_vy * other_car_vy);
+              double other_car_s_position = sensor_fusion[i][5];
+
+              // Project this car position in the future, based on previous s points and its actual velocity. 
+              // This way we could avoid hitting it. 
+              other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
+              // Check if the other car is ahead of us but not too close or if it is behind us but the gap 
+              // is at least 15 meters and its velocity is not greater than ours.
+              if ((other_car_s_position - car_s) < 30 || ((car_s - other_car_s_position) < 40 && (other_car_speed <= car_speed))) {
+                // Set a flag for our car being to close to another one in the same lane.
+                move_to_left_lane = false;
+              }             
             }
           }
 
           // Check if our car is too close to another one in the same lane and adjust velocity accordingly.
           if (is_too_close) {
-            if (can_pass && (lane > 0)) {
-              lane = 0;
+            if (move_to_right_lane) {
+              lane += 1;
+            } else if (move_to_left_lane) {
+              lane -= 1;
             } else {
               // Decrease velocity by about 10 m/sec
               ref_velocity -= 0.224;
