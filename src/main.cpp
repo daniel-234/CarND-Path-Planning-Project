@@ -125,6 +125,8 @@ int main() {
 
           // Flag to signal that our car is getting too close to another one.
           bool is_too_close = false;
+          // Flag to signal that our car is getting too close to another one.
+          bool can_pass = true;
 
           // Sensor fusion is a 2D vector of cars and then that car's measurements.
           // Loop through each car measurements.
@@ -147,14 +149,39 @@ int main() {
               if ((other_car_s_position > car_s) && (other_car_s_position - car_s) < 30) {
                 // Set a flag for our car being to close to another one in the same lane.
                 is_too_close = true;
-              }
+              } 
+            }
+
+            // Check that our car is not on the left lane and if any car is on it, in case we have to pass
+            // a slower car in the middle lane. 
+            if ((lane == 1) && (d < 4) && (d > 0)) {
+
+
+              // Save this car's measurements.
+              double other_car_vx = sensor_fusion[i][3];
+              double other_car_vy = sensor_fusion[i][4];
+              double other_car_speed = sqrt(other_car_vx * other_car_vx + other_car_vy * other_car_vy);
+              double other_car_s_position = sensor_fusion[i][5];
+
+              // Project this car position in the future, based on previous s points and its actual velocity. 
+              // This way we could avoid hitting it. 
+              other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
+              // Check if the other car is behind us (on the left lane) and the gap between the two is less than 30 meters.
+              if ((other_car_s_position < car_s) && (car_s - other_car_s_position) < 15 && (other_car_speed > car_speed)) {
+                // Set a flag for our car being to close to another one in the same lane.
+                can_pass = false;
+              } 
             }
           }
 
           // Check if our car is too close to another one in the same lane and adjust velocity accordingly.
           if (is_too_close) {
-            // Decrease velocity by about 10 m/sec
-            ref_velocity -= 0.224;
+            if (can_pass && (lane > 0)) {
+              lane = 0;
+            } else {
+              // Decrease velocity by about 10 m/sec
+              ref_velocity -= 0.224;
+            }
           } else if (ref_velocity < 49.5) {
             ref_velocity += 0.224;
           }
