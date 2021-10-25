@@ -166,7 +166,7 @@ int main() {
               other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
               // Check if the other car is ahead of us but not too close or if it is behind us but the gap 
               // is at least 15 meters and its velocity is not greater than ours.
-              if ((other_car_s_position - car_s) < 30 || (((car_s - other_car_s_position) < 20) && (other_car_speed >= car_speed))) {
+              if ((other_car_s_position - car_s) < 15 || (((car_s - other_car_s_position) < 15) && (other_car_speed >= car_speed))) {
                 // Set a flag for our car being to close to another one in the same lane.
                 is_right_lane_free = false;
               } 
@@ -183,7 +183,7 @@ int main() {
               other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
               // Check if the other car is ahead of us but not too close or if it is behind us but the gap 
               // is at least 15 meters and its velocity is not greater than ours.
-              if ((other_car_s_position - car_s) < 30 || (((car_s - other_car_s_position) < 20) && (other_car_speed >= car_speed))) {
+              if ((other_car_s_position - car_s) < 15 || (((car_s - other_car_s_position) < 15) && (other_car_speed >= car_speed))) {
                 // Set a flag for our car being to close to another one in the same lane.
                 is_left_lane_free = false;
               }             
@@ -192,10 +192,10 @@ int main() {
 
           // Check if our car is too close to another one in the same lane and adjust velocity accordingly.
           if (is_too_close) {
-            if (is_right_lane_free) {
-              lane += 1;
-            } else if (is_left_lane_free) {
+            if (is_left_lane_free && lane > 0) {
               lane -= 1;
+            } else if (is_right_lane_free && lane < 2) {
+              lane += 1;
             } else {
               // Decrease velocity by about 10 m/sec
               ref_velocity -= 0.224;
