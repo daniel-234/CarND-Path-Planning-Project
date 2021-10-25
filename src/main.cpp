@@ -248,10 +248,6 @@ int main() {
             list_of_anchor_y_points.push_back(ref_y);
           }
 
-          for (int i = 0; i < list_of_anchor_x_points.size(); i++) {
-            std::cout << "first x: " << list_of_anchor_x_points[i] << ", first y: " << list_of_anchor_y_points[i] << std::endl;
-          }
-
           // After the two reference points, we push 3 more points as anchor for the spline that will interpolate them
           // and generate a full list of points for the car to follow. 
           // Add 3 more points, evenly spaced at 30 meters from each other and from the beginning of the map reference.
@@ -270,10 +266,6 @@ int main() {
           list_of_anchor_x_points.push_back(third_waypoint[0]);
           list_of_anchor_y_points.push_back(third_waypoint[1]);
           
-          for (int i = 0; i < list_of_anchor_x_points.size(); i++) {
-            std::cout << "spaced x: " << list_of_anchor_x_points[i] << ", spaced y: " << list_of_anchor_y_points[i] << std::endl;
-          }
-
           // Transform the 5 points that we'll take as anchor to local car coordinates. 
           // The last point of the previous path is put at (0, 0) with an angle at 0 degrees. 
           // The other 4 points only change their angle to 0 degrees. This way even if the car is in a curved road,
@@ -285,8 +277,6 @@ int main() {
 
             list_of_anchor_x_points[i] = (shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw));
             list_of_anchor_y_points[i] = (shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
-
-            std::cout << "x: " << list_of_anchor_x_points[i] << ", y: " << list_of_anchor_y_points[i] << std::endl;
           }
 
           // Create a spline
@@ -362,11 +352,7 @@ int main() {
             // Push the values to the list of output points. 
             next_x_vals.push_back(x_point);
             next_y_vals.push_back(y_point);
-          }
-
-          for (int i = 0; i < next_x_vals.size(); i++) {
-            std::cout << "x: " << next_x_vals[i] << ", y: " << next_y_vals[i] << std::endl;
-          }         
+          }       
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
