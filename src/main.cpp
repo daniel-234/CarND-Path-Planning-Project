@@ -53,7 +53,7 @@ int main() {
 
   // Define a lane variable to be able to switch quickly from a lane to another
   int lane = 1;
-  // Velocity of our car at the beginning. It will get incremented at lines 156 - 157.
+  // Velocity of our car at the beginning. It will be modified at lines 200 - 205.
   double ref_velocity = 0;
 
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
@@ -118,7 +118,7 @@ int main() {
           // car should behave. 
 
           // If we have the value of the previous s position of the car, use that as the car value to 
-          // compare it to other cars s value. 
+          // compare it to other cars' s values. 
           if (previous_size > 0) {
             car_s = end_path_s;
           }
@@ -148,7 +148,7 @@ int main() {
               other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
               // Check if the other car is in front of us and the gap between the two is less than 30 meters.
               if ((other_car_s_position > car_s) && (other_car_s_position - car_s) < 30) {
-                // Set a flag for our car being to close to another one in the same lane.
+                // Set a flag for our car being too close to another one in the same lane.
                 is_too_close = true;
               } 
             }
@@ -167,7 +167,7 @@ int main() {
               // Check if the other car is ahead of us but not too close or if it is behind us but the gap 
               // is at least 15 meters and its velocity is not greater than ours.
               if ((other_car_s_position - car_s) < 15 || (((car_s - other_car_s_position) < 15) && (other_car_speed >= car_speed))) {
-                // Set a flag for our car being to close to another one in the same lane.
+                // Set a flag for our car being too close to another one in the same lane.
                 is_right_lane_free = false;
               } 
             // Check if our car can move to a left lane to pass a slower car. 
@@ -184,13 +184,13 @@ int main() {
               // Check if the other car is ahead of us but not too close or if it is behind us but the gap 
               // is at least 15 meters and its velocity is not greater than ours.
               if ((other_car_s_position - car_s) < 15 || (((car_s - other_car_s_position) < 15) && (other_car_speed >= car_speed))) {
-                // Set a flag for our car being to close to another one in the same lane.
+                // Set a flag for our car being too close to another one in the same lane.
                 is_left_lane_free = false;
               }             
             }
           }
 
-          // Check if our car is too close to another one in the same lane and adjust velocity accordingly.
+          // Check if our car is too close to another one in the same lane and change lane or adjust velocity accordingly.
           if (is_too_close) {
             if (is_left_lane_free && lane > 0) {
               lane -= 1;
@@ -217,14 +217,14 @@ int main() {
           // If the previous path has less than 2 points, use the car state (starting point and angle) to 
           // generate two points.
           if (previous_size < 2) {
-            // We could create a previous point by using the car angle to generate a path tangent to the car.
+            // We could create a previous point by using the car's angle to generate a path tangent to the car.
             double previous_car_x = car_x - cos(car_yaw);
             double previous_car_y = car_y - sin(car_yaw);
 
-            // Add the previous car point obtained from the car's angle. 
+            // Add the previous car's point obtained from the car's angle. 
             list_of_anchor_x_points.push_back(previous_car_x);
             list_of_anchor_y_points.push_back(previous_car_y);
-            // Add the current car state to the list.
+            // Add the current car's state to the list.
             list_of_anchor_x_points.push_back(car_x);
             list_of_anchor_y_points.push_back(car_y);
           } else {
@@ -269,7 +269,7 @@ int main() {
           // Transform the 5 points that we'll take as anchor to local car coordinates. 
           // The last point of the previous path is put at (0, 0) with an angle at 0 degrees. 
           // The other 4 points only change their angle to 0 degrees. This way even if the car is in a curved road,
-          // we could treat it as if there is no angle (as if looking from its point of view).
+          // we could treat it as if there were no angle (as if looking from its point of view).
           for (int i = 0; i < list_of_anchor_x_points.size(); i++) {
             // Shift the car reference angle to 0 degrees
             double shift_x = list_of_anchor_x_points[i] - ref_x;
@@ -301,10 +301,8 @@ int main() {
             next_y_vals.push_back(previous_path_y[i]);
           }
 
-          // To calculate the points that the car should visit, we can fix a point in the horizon that the car would reach. 
-          // If we use a reference where the car direction at the starting point is the origin of the x axis with a 0 degree
-          // angle, we can assign the x value we want to that point, for example 30 meters. 
-          // By knowing that x value, we can get the y value from the spline we declared at line 193.
+          // To calculate the points that the car should visit, we can fix a point in the horizon that the car would reach, measure
+          // it in x coordinates starting from the car position and a 0 degree angle, and get the y value from a spline function.
           // Taking the car's status as reference and the target point as opposite angle, we can paint a triangle where the
           // hypotenuse is the distance to the target and the opposite side is the x axis. 
           //
