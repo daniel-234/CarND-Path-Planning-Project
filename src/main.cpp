@@ -126,8 +126,8 @@ int main() {
           // Flag to signal that our car is getting too close to another one.
           bool is_too_close = false;
           // Flags to signal that our car can move to another lane to pass another car.
-          bool move_to_left_lane = true;
-          bool move_to_right_lane = true;
+          bool is_left_lane_free = true;
+          bool is_right_lane_free = true;
 
           // Sensor fusion is a 2D vector of cars and then that car's measurements.
           // Loop through each car measurements.
@@ -166,9 +166,9 @@ int main() {
               other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
               // Check if the other car is ahead of us but not too close or if it is behind us but the gap 
               // is at least 15 meters and its velocity is not greater than ours.
-              if ((other_car_s_position - car_s) < 30 || ((car_s - other_car_s_position) < 40 && (other_car_speed <= car_speed))) {
+              if ((other_car_s_position - car_s) < 30 || (((car_s - other_car_s_position) < 20) && (other_car_speed >= car_speed))) {
                 // Set a flag for our car being to close to another one in the same lane.
-                move_to_right_lane = false;
+                is_right_lane_free = false;
               } 
             // Check if our car can move to a left lane to pass a slower car. 
             } else if ((lane != 0) && d < (4 * lane) && d > (4 * lane - 4)) {
@@ -183,18 +183,18 @@ int main() {
               other_car_s_position += ((double)previous_size * 0.02 * other_car_speed);
               // Check if the other car is ahead of us but not too close or if it is behind us but the gap 
               // is at least 15 meters and its velocity is not greater than ours.
-              if ((other_car_s_position - car_s) < 30 || ((car_s - other_car_s_position) < 40 && (other_car_speed <= car_speed))) {
+              if ((other_car_s_position - car_s) < 30 || (((car_s - other_car_s_position) < 20) && (other_car_speed >= car_speed))) {
                 // Set a flag for our car being to close to another one in the same lane.
-                move_to_left_lane = false;
+                is_left_lane_free = false;
               }             
             }
           }
 
           // Check if our car is too close to another one in the same lane and adjust velocity accordingly.
           if (is_too_close) {
-            if (move_to_right_lane) {
+            if (is_right_lane_free) {
               lane += 1;
-            } else if (move_to_left_lane) {
+            } else if (is_left_lane_free) {
               lane -= 1;
             } else {
               // Decrease velocity by about 10 m/sec
