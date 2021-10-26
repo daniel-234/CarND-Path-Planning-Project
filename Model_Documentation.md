@@ -25,3 +25,10 @@ To compute these points, by following the project Q&A discussion, a point in the
 The number of steps was calculated by dividing the target distance by the car velocity at each cycle. 
 Then new path coordinates were generated and added to the points from the previous path, until the output list had a length of 50. 
 
+The last part of the project was to develop the logic to change lanes. 
+The first step was to declare a boolean value "is_too_close" that would be set to true if our car were closer than 30 meters to a vehicle in front of it on the same lane. 
+This variable would be checked at every cycle and, when true, it would trigger a velocity decrease of about 10 meters/second. In case this flag variable were false, the car would keep its velocity close to 50 MPH, increasing it when needed. 
+
+To set the "is_too_close" flag on and off, the sensor fusion data was used to retrieve the "d" coordinate for every other car in sensor range in the road. 
+The "d" coordinate can be used to find which lane a car is in, as it measures a car's distance from the center of the road. By using that other car's speed and s position, it was possible to evaluate its distance from our car. 
+The same logic was used to find if the lane to the right and to the left of our car was free from vehicles within 15 meters ahead or behind our car. 
